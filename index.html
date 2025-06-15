@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GIS Provinsi Jambi</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #004d73;
+      color: white;
+      padding: 1em;
+      text-align: center;
+    }
+
+    .map-container {
+      height: 450px;
+      width: 100%;
+    }
+
+    .btn-group {
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .btn-group button {
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      background-color: #0066cc;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .btn-group button:hover {
+      background-color: #004c99;
+    }
+
+    .data-section {
+      text-align: center;
+      margin: 20px;
+    }
+
+    .data-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .data-section li {
+      margin: 5px 0;
+      cursor: pointer;
+      color: #0066cc;
+    }
+
+    .data-section li:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      background-color: #eee;
+      padding: 15px 0;
+      text-align: center;
+      margin-top: 20px;
+      color: #333;
+    }
+
+    .kelompok {
+      font-size: 14px;
+      color: #444;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sistem Informasi Geografis - Provinsi Jambi</h1>
+  </header>
+
+  <div id="map" class="map-container"></div>
+
+  <div class="btn-group">
+    <button onclick="tampilkanData('objek-wisata')">Lihat Objek Wisata</button>
+    <button onclick="tampilkanData('geologi-daerah')">Lihat Data Geologi</button>
+  </div>
+
+  <div class="data-section" id="dataSection">
+    <p>Klik tombol di atas untuk melihat data.</p>
+  </div>
+
+  <footer>
+    &copy; 2025 - Sistem Informasi Geografis<br>
+    <div class="kelompok">Kelompok: Pramudya Azis, Heru Wijaya, Aditiya Shaputra</div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([-1.6100, 103.6100], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = null;
+
+    const data = {
+      "objek-wisata": [
+        { nama: "Candi Muaro Jambi", keterangan: "Kompleks percandian Buddha terbesar di Sumatra", lat: -1.5465, lng: 103.7743 },
+        { nama: "Danau Gunung Tujuh", keterangan: "Danau tertinggi di Asia Tenggara, di kaki Gunung Tujuh", lat: -1.6908, lng: 101.4475 },
+        { nama: "Geopark Merangin", keterangan: "Warisan geologi dengan fosil flora laut prasejarah", lat: -2.0683, lng: 101.8566 },
+        { nama: "Gunung Kerinci", keterangan: "Gunung tertinggi di Sumatra (3.805 mdpl)", lat: -1.6977, lng: 101.2647 },
+        { nama: "Danau Kaco", keterangan: "Danau jernih berwarna biru di tengah hutan Kerinci", lat: -2.1931, lng: 101.6575 }
+      ],
+      "geologi-daerah": [
+        { nama: "Kabupaten Kerinci", keterangan: "Daerah pegunungan dan vulkanik aktif, terdapat Gunung Kerinci.", lat: -1.744, lng: 101.252 },
+        { nama: "Kabupaten Merangin", keterangan: "Wilayah kaya fosil, masuk Geopark Nasional Merangin.", lat: -2.063, lng: 102.078 },
+        { nama: "Kabupaten Sarolangun", keterangan: "Didominasi oleh formasi batuan sedimen dan granit.", lat: -2.314, lng: 102.732 },
+        { nama: "Kabupaten Batanghari", keterangan: "Mengandung batubara dan formasi Air Hitam.", lat: -1.700, lng: 103.086 },
+        { nama: "Kabupaten Muaro Jambi", keterangan: "Memiliki dataran rendah dan banyak sungai.", lat: -1.540, lng: 103.840 },
+        { nama: "Kabupaten Tanjung Jabung Timur", keterangan: "Lahan gambut dan formasi aluvial pesisir.", lat: -1.160, lng: 104.110 },
+        { nama: "Kabupaten Tanjung Jabung Barat", keterangan: "Kondisi geologi dataran rendah pesisir timur.", lat: -1.226, lng: 103.121 },
+        { nama: "Kabupaten Tebo", keterangan: "Didominasi batuan sedimen dan potensi mineral.", lat: -1.528, lng: 102.326 },
+        { nama: "Kabupaten Bungo", keterangan: "Terdapat struktur patahan dan potensi emas.", lat: -1.336, lng: 101.901 },
+        { nama: "Kota Jambi", keterangan: "Wilayah perkotaan dengan formasi dataran aluvial.", lat: -1.610, lng: 103.613 },
+        { nama: "Kota Sungai Penuh", keterangan: "Berada di dataran tinggi, dekat Danau Kerinci.", lat: -2.063, lng: 101.393 }
+      ]
+    };
+
+    function tampilkanData(jenis) {
+      const container = document.getElementById('dataSection');
+      const judul = jenis.replace('-', ' ').toUpperCase();
+
+      let isi = `<h3>Data ${judul}</h3><ul>`;
+      data[jenis].forEach(item => {
+        isi += `<li onclick="fokuskanKe(${item.lat}, ${item.lng}, '${item.nama}', '${item.keterangan}')">${item.nama}</li>`;
+      });
+      isi += '</ul>';
+      container.innerHTML = isi;
+    }
+
+    function fokuskanKe(lat, lng, nama, keterangan) {
+      if (marker) map.removeLayer(marker);
+      marker = L.marker([lat, lng]).addTo(map)
+        .bindPopup(`<strong>${nama}</strong><br>${keterangan}`)
+        .openPopup();
+      map.setView([lat, lng], 12);
+    }
+  </script>
+</body>
+</html>
